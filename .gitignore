@@ -1,0 +1,7 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+processing/data
+shinny_app/data
+shinny_app/config.json

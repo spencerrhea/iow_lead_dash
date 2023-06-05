@@ -1,0 +1,14 @@
+col_name
+OBJECTID
+YEAR_BUILT
+occupancy_type
+build_type
+flood_scheme_type
+in_flood_zone
+num_stories
+num_units
+BLDG_VALUE
+HTD_SQ_FT
+County
+Full_Address
+geometry
