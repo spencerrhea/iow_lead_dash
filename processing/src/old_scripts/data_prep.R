@@ -2,19 +2,28 @@
 library(sf)
 library(tidyverse)
 
-#### Subset building layer #### 
+#### Subset Water district layers #### 
+# Read in water district boundaries 
 boundaries <- read_sf('processing/data/input_data/temm.geojson')
+
+# Filter for North Carolina 
 nc_boundaries <- boundaries %>%
     filter(state_code == 'NC') %>%
     select(-service_area_type_code)
+
+# Save NC boundaries 
 sf::write_sf(obj = nc_boundaries, 
              dsn = 'processing/data/processed_data/nc_boundaries.geojson')
 
+#### Subset building layer to water district boundaries #### 
+# Read in building layer 
 building_layer <- read_sf('processing/data/input_data/NC_Buildings_Footprints_(2010).geojson')
 
+# Transform water boundries to building layer projection  
 nc_boundaries <- nc_boundaries %>%
     st_transform(., st_crs(building_layer))
 
+# Subset and save the boundaries as seperate files 
 dir.create('processing/data/processed_data/boundary_building')
 log_errors <- tibble()
 boundary_codes <- nc_boundaries$pwsid
@@ -36,6 +45,7 @@ for(i in 1:length(boundary_codes)){
     sf::st_write(boundary_buildings, file_name,
                  delete_dsn = T)
     
+    # Log errors 
     sucesses_tib <- tibble(pwsid = this_boundary,
                            status = 'saved')
     
@@ -43,13 +53,8 @@ for(i in 1:length(boundary_codes)){
     
 }
 
-#### Make centriod layers ####
+#### Convert buildings to centroids for viewing centriod layers ####
 wd_buildings <- list.files('processing/data/processed_data/boundary_building/', full.names = T)
-
-
-
-nc_boundaries <- nc_boundaries %>%
-    st_transform(., st_crs(building_layer))
 
 dir.create('processing/data/processed_data/wd_building_centroids')
 log_errors <- tibble()
@@ -95,13 +100,14 @@ for(i in 1:length(wd_buildings)){
 # read in parcel data
 parcle_layer <- read_sf('processing/data/input_data/NC_Parcels_all.gdb')
 
-# Read in NC boundaries 
-nc_boundaries <- read_sf('processing/data/processed_data/nc_boundaries.geojson')
-boundary_codes <- nc_boundaries$pwsid
+# Read in NC boundaries (Not nessisary if running all at once)
+# nc_boundaries <- read_sf('processing/data/processed_data/nc_boundaries.geojson')
+# boundary_codes <- nc_boundaries$pwsid
+# 
+# nc_boundaries <- nc_boundaries %>%
+#     st_transform(., st_crs(parcle_layer))
 
-nc_boundaries <- nc_boundaries %>%
-    st_transform(., st_crs(parcle_layer))
-
+# 
 dir.create('processing/data/processed_data/wd_parcel_centroids')
 dir.create('processing/data/processed_data/boundary_parcels')
 log_errors_subset_parcels <- tibble()
@@ -134,7 +140,7 @@ for(i in 1:length(boundary_codes)){
     log_errors_subset_parcels <- rbind(log_errors_subset_parcels, sucesses_tib)
 }
 
-# Save boundaries and individual files 
+#### Save boundaries and individual files ####
 nc_boundaries <- read_sf('processing/data/processed_data/nc_boundaries.geojson')
 dir.create('processing/data/processed_data/wd_boundaries')
 

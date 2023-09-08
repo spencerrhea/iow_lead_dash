@@ -26,7 +26,7 @@ new_path <- paste0('shinny_app/data/building_address_join_pretty/', fils_names)
 dir.create('shinny_app/data/building_address_join_pretty')
 
 
-file.copy(from = fils_path, to = new_path)
+file.copy(from = fils_path, to = new_path, overwrite = T)
 
 # boundaries 
 file.remove(list.files('shinny_app/data/wd_boundaries/', full.names = TRUE))
@@ -41,7 +41,7 @@ new_path_bound <- paste0('shinny_app/data/wd_boundaries/', fils_names_bound_move
 
 dir.create('shinny_app/data/wd_boundaries')
 
-file.copy(from = fils_path_bound, to = new_path_bound)
+file.copy(from = fils_path_bound, to = new_path_bound, overwrite = TRUE)
 
 
 # look <- st_read('processing/data/processed_data/building_address_join_pretty/043740039.geojson')

@@ -1,16 +1,19 @@
 library(sf)
 library(tidyverse)
 
+# Read in justice 40 data
 justice40 <- st_read('processing/data/input_data/usa')
 col_names <- st_read('processing/data/input_data/justice_40_columns.csv')
 
+# Columns to keep
 dis_cols <- col_names[30:37,]
 dis_cols$column_name <- str_split_fixed(dis_cols$column_name, ' [(]', n = Inf)[,1]
 
-
+# Filter for NC
 justice_nc <- justice40 %>%
     filter(SF == 'North Carolina') %>%
     select(CF, col_names$shapefile_column[30:37]) %>%
+    # Add all justice 40 factors 
     mutate(tot_dis = N_WTR+N_WKFC+N_CLT+N_ENY+N_TRN+N_HSG+N_PLN+N_HLTH) 
 
 no_geo <- justice_nc %>%

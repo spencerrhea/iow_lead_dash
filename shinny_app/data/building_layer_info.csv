@@ -1,0 +1,34 @@
+"Column","nc_dec","notes","pretty_name"
+"S_BUILDING_FP","Internal feature number",,
+"BLDG_ID","Primary key","Defined by mapping contractor using the formula STFIPS + COFIPS + DATE + SEQUENTIAL NUMBER (where date = YYYYMMDD) ","Building Key"
+"PID","Tax Parcel Identification Number ",,"Tax Parcel Identification Number "
+"OCCUP_TYPE","HAZUS Building and Facilities Occupancy Type","A code that provides a link to the name of the Occupancy feature in the D_OCCUPANCY_TYPE table. ","Occupancy Type"
+"BUILD_TYPE","HAZUS Building Construction Type","HAZUS Building Construction Type i.e.Wood, Steel, Concrete, etc... A code that provides a link to the name of the Occupancy feature in the D_BUILDING_TYPE table. ","Building Construction Type"
+"FL_SCHEME","HAZUS Flood Scheme","A code that provides a link to the name of the Occupancy feature in the D_FL_SCHEMES table. ",
+"FLD_ZONE","Flood Zone Lookup Identification","A code that provides a link to the name of the Occupancy feature in the D_ZONE table. ",
+"STATIC_BFE","Is the building within a flood zone with elevations determined with Static BFE?","s the building within a flood zone with elevations determined with Static BFE?. A code that provides a link to the name of the Occupancy feature in the D_YES_NO_CONFIDENCE table. ",
+"WIND_ZONE","Wind Zone for Manufactured Homes Only","Wind Zone for Manufactured Homes Only (OCCUP_TYP = RES2) and BUILD_TYPE = MANUFHOUSING. A code that provides a link to the name of the Occupancy feature in the D_WIND_ZONE table. ",
+"YEAR_BUILT","Year the structure was built ",,"Year Built"
+"YRBUILTSRC","Year Built Attribute Source","Year Built Attribute Source. A code that provides a link to the name of the Occupancy feature in the D_YEAR_BUILT_SOURCE table.",
+"BLDG_VALUE","Building Value",,"Building Value"
+"BLDVAL_SRC","Building Value Source","Building Value Source. A code that provides a link to the name of the Occupancy feature in the D_BUILDING_VALUE_SOURCE table. ",
+"BLDGADJFAC","Adjustment Factor for Replacement Value ",,
+"BLDGREPVAL","Building Replacement Value ",,
+"CONTREPVAL","Contents Replacement Value ",,
+"INVREPVAL","Inventory Replacement Value",,
+"HTD_SQ_FT","Heated Square Footage",,"Heated Square Footage"
+"HTDSQFTSRC","Heated Square Footage Source","Heated Square Footage Source. A code that provides a link to the name of the Occupancy feature in the D_HEATED_SQFT_SOURCE table. ",
+"FFE","First Floor Elevation",,"First Floor Elevation"
+"FFE_TYP","Type of Survey used to obtain First Floor Elevation. ",,
+"LIDAR_LAG","Lowest Adjacent Grade Derived from LiDAR ",,
+"LIDAR_HAG","Highest Adjacent Grade Derived from LiDAR ",,
+"FOUND_TYPE","Structure Foundation Type","Structure Foundation Type. A code that provides a link to the name of the Occupancy feature in the D_FOUNDATION_TYPE table. ",
+"BASMENT_TY","Basement Type","Basement Type. A code that provides a link to the name of the Occupancy feature in the D_BASEMENT_TYPE table. ",
+"NUM_STORY","Number of Stories","Number of Stories. A code that provides a link to the name of the Occupancy feature in the D_NUMBER_OF_STORIES table. ","Number of Stories"
+"NUM_UNITS","Number of Units","Number of Units. A code that provides a link to the name of the Occupancy feature in the D_NUMBER_OF_UNITS table. ","Number of Units"
+"ISCOASTAL","In Coastal Zone? 0 = No, 1 = Yes. ",,
+"ISLIMWA","In Limit of Moderate Wave Action (LIMWA) Zone? 0 = No, 1 = Yes. ",,
+"SHAPE_Length","Length of feature in internal units",,
+"SHAPE_Area","Shape_Area",,
+"Full_Address","Full Address",,"Full Address"
+"Place_Type","Place type from address dataset",,"Structure Type"
