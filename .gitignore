@@ -4,7 +4,6 @@
 .Ruserdata
 shinny_app/rsconnect/
 /shinny_app/data/*
-!/shinny_app/data/boundary_names_to_code.csv
 !/shinny_app/data/building_layer_info.csv
 !/shinny_app/data/building_pretty_key.csv
 /processing/data/*
