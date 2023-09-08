@@ -6,7 +6,8 @@ shinny_app/rsconnect
 /shinny_app/data/*
 !/shinny_app/data/building_layer_info.csv
 !/shinny_app/data/building_pretty_key.csv
-/processing/data/*
+/processing/data/input_data/*
+/processing/data/processed_data/*
 !/processing/data/processed_data/building_layer_info.csv
 !/processing/data/processed_data/parcel_layer_info.csv
 !/processing/data/processed_data/biulding_occup_key.csv

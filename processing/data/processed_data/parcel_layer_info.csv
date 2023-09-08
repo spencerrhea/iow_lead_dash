@@ -1,0 +1,12 @@
+column,nc_dec,notes,pretty_name
+parno,The local parcel number for the parcel record,,Local Parcel Number
+CNTYNAME,The county name,,County Name
+NPARNO,The local parcel number with the state and county FIPS added to the beginning of the local parcel number.,,National Parcel Number
+STRUCT,"Is there a structure or improvement on the parcel? (Y = yes or N =no or U = unknown, this is the default value)",,Structure Indicator
+STRUCTNO,The number of structures on the parcel. This is populated when the source data indicates how many structures. This is used primarily to support emergency planning and response. If structure number greater than 1 then MULTISTRUCT = yes,,Number of Structures
+STRUCTYEAR,The year built of the primary building on the parcel,,Structure Year
+OWNTYPE,"The owner type (e.g., federal, state, private, etc.) The domain of values for this attribute may be international, tribal, federal, state, county, local, private, non-profit, other, unknown. This may also be just public/private/exempt",,Owner Classification or Type
+OWNNAME,"The primary surface owner name, the full name may be populated or the components of the name (first and last).",,Full Owner Name
+MAILADD ,"The full mailing address as a single field (the mailing address may also be broken into its component parts; the source data may include the full mailing address, or its component parts or both).",,Full Mailing Address
+SITEADD,"The full site address as a single field (the mailing address may also be broken into its component parts; the source data may include the full site address, or its component parts or both).",,Full Site Address
+SALEDATE,"The date of the last sale if available, as a date field.",,Last Sale Date
