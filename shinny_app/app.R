@@ -51,7 +51,7 @@ names(boundary_names) <- boundary_real_names$pws_name
 justice_40 <- st_read('data/justice_40_nc_poly.geojson')
 
 ui <- dashboardPage(
-    title = 'EPA Lead Dash',
+    title = 'Lead Tool',
     # includeCSS("www/app.css"),
     # title = 'EPA Lead Rule Viewer',
     # headerPanel(
@@ -335,7 +335,11 @@ server <- function(input, output, session) {
     wd_bondary_react <- reactive({
         wd_boundary_name <- input$BOUNDARY
         
-        print(wd_boundary_name)
+        if(wd_boundary_name == ''){
+            wd_boundary_name <- last_boundary$prev_boundary[length(last_boundary$prev_boundary)-1]
+        }
+        
+        # print(wd_boundary_name)
         
         wd_boundary <- read_sf(paste0('data/wd_boundaries/', wd_boundary_name, '.geojson'))
     })
@@ -357,8 +361,8 @@ server <- function(input, output, session) {
         
         if(boundary_id == ''){
             boundary_id <- last_boundary$prev_boundary[length(last_boundary$prev_boundary)-1]
-            print(last_boundary$prev_boundary)
-            print(length(last_boundary$prev_boundary)-1)
+            # print(last_boundary$prev_boundary)
+            # print(length(last_boundary$prev_boundary)-1)
         }
         # Read in data 
         boundary_buildings <- read_sf(paste0('data/building_address_join_pretty/', boundary_id, '.geojson')) %>%

@@ -1,34 +1,97 @@
 library(sf)
 library(tidyverse)
 
+#### Options (Change if you want to process all boundaries or only new boundaries) ####
+only_processe_new_boundaries <- T
+
+
 #### Download Boundaries from geoconnex ####
-boundaries <- sf::read_sf('https://urldefense.com/v3/__https://reference.geoconnex.us/collections/pws/items?state_code=NC&limit=10000&f=json__;!!OToaGQ!vMRRMCW-1Nb6i0rC2DarRFkssxktKHSEa1RFjVrXkr3p1xPh_10Gl3IVLFk29TDV-JfqVmCTvIxvMl7mJIK0f-A$')
-write_sf(boundaries, 'processing/data/input_data/geoconnex_boundaries.geojson')
+boundaries <- sf::read_sf('https://urldefense.com/v3/__https://reference.geoconnex.us/collections/pws/items?state_code=NC&limit=10000&f=json__;!!OToaGQ!vMRRMCW-1Nb6i0rC2DarRFkssxktKHSEa1RFjVrXkr3p1xPh_10Gl3IVLFk29TDV-JfqVmCTvIxvMl7mJIK0f-A$')%>%
+    rename(pwsid = id) %>%
+    select(-service_area_type)
+
+write_sf(boundaries, 'processing/data/input_data/geoconnex_boundaries.geojson',
+         delete_dsn = T)
+
 boundaries <- read_sf('processing/data/input_data/geoconnex_boundaries.geojson')
 
+#### Read in log file ####
 
+if(file.exists('logs/boundary_logging_file.csv') && only_processe_new_boundaries){
+    
+    logging_file <- read_csv('logs/boundary_logging_file.csv')
+    
+    boundries_held_or_errored <- logging_file %>%
+        filter(status %in% c('held', 'processing_error')) %>%
+        pull(pwsid)
+    
+    # Boundries that were updated 
+    new_boundries_dates <- boundaries %>%
+        as.data.frame() %>%
+        select(pwsid, source_date, contribution_date)
+    
+    new_boundries <- boundaries$pwsid[! boundaries$pwsid %in% boundries_held_or_errored]
+    
+    are_there_new_boundries <- ! length(new_boundries) == 0
+    
+    boundries_updated <- logging_file %>%
+        full_join(new_boundries_dates, by = 'pwsid') %>%
+        mutate(needs_update_s = ifelse(source_date.x == source_date.y, FALSE, TRUE),
+               needs_update_c = ifelse(contribution_date.x == contribution_date.y, FALSE, TRUE)) %>%
+        filter(needs_update_s | needs_update_c)
+    
+    are_there_updated_boundries <- ! nrow(boundries_updated) == 0
+    
+    if(! (are_there_new_boundries || are_there_updated_boundries)){
+        stop('No new boundaries to process')
+    } else {
+        if(are_there_updated_boundries){
+            boundries_to_get <- boundries_updated$pwsid
+        }
+        
+        if(are_there_new_boundries) {
+            if(are_there_updated_boundries){
+                boundries_to_get <- c(boundries_to_get, new_boundries)
+            } else{
+                boundries_to_get <- new_boundries
+            }
+        }
+    }
+    
+} else{
+    only_processe_new_boundaries <- FALSE
+    
+    boundries_to_get <- boundaries$pwsid
+    
+    
+    print('no logging file found, re-running processing on all boundaries')
+}
+
+boundaries <- boundaries %>%
+    filter(pwsid %in% !!boundries_to_get)
 
 #### Subset Water district layers #### 
-# Read in water district boundaries 
-# boundaries <- read_sf('processing/data/input_data/temm.geojson')
-boundaries <- read_sf('processing/data/input_data/geoconnex_boundaries.geojson') %>%
-    rename(pwsid = id)
-
+#
 # Create names to boundary idea look up table 
 boundary_names_to_code <- boundaries %>%
     as.data.frame() %>%
     select(pwsid, pws_name)
 
-write_csv('processing/data/processed_data/boundary_names_to_code.csv')
+boundary_names_to_code_old <- read_csv('processing/data/processed_data/boundary_names_to_code.csv')
+
+boundary_names_to_code_new <- rbind(boundary_names_to_code_old, boundary_names_to_code) %>%
+    distinct(pwsid)
+
+write_csv(boundary_names_to_code_new, 'processing/data/processed_data/boundary_names_to_code.csv')
 
 # Filter for North Carolina 
 nc_boundaries <- boundaries %>%
-    filter(state_code == 'NC')
-    # select(-service_area_type_code)
+    filter(state_code == 'NC') 
 
-# Save NC boundaries 
-sf::write_sf(obj = nc_boundaries, 
-             dsn = 'processing/data/processed_data/nc_boundaries.geojson')
+# Save NC boundaries (old code)
+# sf::write_sf(obj = nc_boundaries, 
+#              dsn = 'processing/data/processed_data/nc_boundaries.geojson',
+#              delete_dsn = T)
 
 #### Subset building layer to water district boundaries #### 
 # Read in building layer 
@@ -51,11 +114,19 @@ for(i in 1:length(boundary_codes)){
     boundary_buildings <- try(sf::st_filter(building_layer, this_boundary))
     
     if(inherits(boundary_buildings, 'try-error')){
-        error_tib <- tibble(pwsid = this_boundary,
-                            status = 'error')
         
-        log_errors <- rbind(log_errors, error_tib)
-        next
+        # Try with st off 
+        sf::sf_use_s2(F)
+        boundary_buildings <- try(sf::st_filter(building_layer, this_boundary))
+        sf::sf_use_s2(T)
+        
+        if(inherits(boundary_buildings, 'try-error')){
+            error_tib <- tibble(pwsid = this_boundary$pwsid,
+                                status = 'error')
+            
+            log_errors <- rbind(log_errors, error_tib)
+            next
+        }
     }
     
     # Save individual file for buildings in each water disdrict
@@ -64,7 +135,7 @@ for(i in 1:length(boundary_codes)){
                  delete_dsn = T)
     
     # Log errors 
-    sucesses_tib <- tibble(pwsid = this_boundary,
+    sucesses_tib <- tibble(pwsid = this_boundary$pwsid,
                            status = 'saved')
     
     log_errors <- rbind(log_errors, sucesses_tib)
@@ -93,6 +164,8 @@ all_addresses <- st_read('processing/data/input_data/AddressNC_dupremoved.geojso
 # List buildings cropped to water boundaries 
 buildings_bounbdaries <- list.files('processing/data/processed_data/boundary_building/', 
                                     full.names = T)
+
+buildings_bounbdaries <- buildings_bounbdaries[grepl(paste(boundries_to_get, collapse = '|'), buildings_bounbdaries)]
 
 # Read in keys for codes to meaning for each metric in building dataset 
 occup_key <- read_csv('processing/data/processed_data/biulding_occup_key.csv') 
@@ -153,7 +226,7 @@ for(i in 1:length(buildings_bounbdaries)){
         all_buildings <- rbind(all_buildings, joined_building)
     }
     
-    # Transfor inot 4326, what will be used for app 
+    # Transform to 4326, what will be used for app 
      all_buildings <- try(st_transform(all_buildings, crs = 4326) %>%
         distinct(OBJECTID, .keep_all = TRUE))
      
@@ -192,21 +265,52 @@ for(i in 1:length(buildings_bounbdaries)){
              delete_dsn = T)
 }
 
+#### Update Log ####
+log_amend <- log_errors %>%
+    mutate(status = ifelse(status == 'saved', 'held', 'processing_error'))
+
+if(nrow(log_too_big) > 0){
+    log_amend <- log_amend %>%
+        mutate(status = ifelse(pwsid %in% log_too_big$pwsid, 'processing_error', status))
+}
+
+new_boundries <- log_amend$pwsid
+
+log_amend <- boundaries %>%
+    as.data.frame() %>%
+    select(pwsid, source_date, contribution_date) %>%
+    filter(pwsid %in% !!new_boundries) %>%
+    full_join(., log_amend) %>%
+    mutate(date_processed = as.character(Sys.Date()))
+
+logging_file <- logging_file %>%
+    filter(! pwsid %in% !!new_boundries)
+
+
+logging_file <- rbind(logging_file, log_amend)
+
+write_csv(logging_file, 'logs/boundary_logging_file.csv')
+
 #### Copy final dataset to shiny app directory ####
 # Buildings + addresses 
 pretty_addresses_dir <- 'processing/data/processed_data/building_address_join_pretty/'
 pretty_addresses_files <- list.files(pretty_addresses_dir, full.names = T)
 
-file.copy(pretty_addresses_files, 'shinny_app/data/building_address_join_pretty')
+file.copy(pretty_addresses_files, 'shinny_app/data/building_address_join_pretty',
+          overwrite = T)
 
 # Boundaries 
 boundaries_dir <- 'processing/data/processed_data/wd_boundaries'
 boundries_files <- list.files('processing/data/processed_data/wd_boundaries', full.names = T)
 
-file.copy(boundries_files, 'shinny_app/data/wd_boundaries/')
+file.copy(boundries_files, 'shinny_app/data/wd_boundaries/',
+          overwrite = T)
 
 # Boundary look up table 
-file.copy('processing/data/processed_data/boundary_names_to_code.csv', 'shinny_app/data/boundary_names_to_code.csv')
+file.copy('processing/data/processed_data/boundary_names_to_code.csv', 'shinny_app/data/boundary_names_to_code.csv',
+          overwrite = T)
 
 #### Process justice 40 data ####
-source('processing/src/prep_justice_40.R')
+if(! only_processe_new_boundaries){
+    source('processing/src/prep_justice_40.R')
+}
