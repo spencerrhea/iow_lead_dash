@@ -6,7 +6,7 @@ only_processe_new_boundaries <- T
 
 
 #### Download Boundaries from geoconnex ####
-boundaries <- sf::read_sf('https://urldefense.com/v3/__https://reference.geoconnex.us/collections/pws/items?state_code=NC&limit=10000&f=json__;!!OToaGQ!vMRRMCW-1Nb6i0rC2DarRFkssxktKHSEa1RFjVrXkr3p1xPh_10Gl3IVLFk29TDV-JfqVmCTvIxvMl7mJIK0f-A$')%>%
+boundaries <- sf::read_sf('https://reference.geoconnex.us/collections/pws/items?state_code=NC&limit=3000&f=json')%>%
     rename(pwsid = id) %>%
     select(-service_area_type)
 
